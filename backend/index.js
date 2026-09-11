@@ -29,6 +29,9 @@ const connectDB = async () => {
 // Inicialización del proceso de conexión
 connectDB();
 
+// Importamos y asignamos las rutas de autenticación con el prefijo /api/auth
+app.use('/api/auth', require('./routes/auth'));
+
 // Ruta de prueba inicial para el navegador
 app.get('/', (req, res) => {
     res.send('Servidor de ajedrez activo');
