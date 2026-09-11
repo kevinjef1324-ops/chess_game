@@ -1,0 +1,38 @@
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcryptjs');
+const User = require('../models/user'); // Importamos el molde de usuario
+
+// Ruta para registrar un nuevo jugador
+router.post('/register', async (req, res) => {
+    try {
+        const { username, email, password } = req.body;
+
+        // 1. Validar si el usuario o email ya existen en la base de datos
+        const userExists = await User.findOne({ $or: [{ email }, { username }] });
+        if (userExists) {
+            return res.status(400).json({ message: 'Username or email already exists' });
+        }
+
+        // 2. Encriptar la contraseña (¡Por seguridad!)
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // 3. Crear y guardar el nuevo usuario en MongoDB
+        const newUser = new User({
+            username,
+            email,
+            password: hashedPassword
+        });
+
+        await newUser.save();
+
+        res.status(201).json({ message: 'User registered successfully' });
+
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// Exportamos el enrutador
+module.exports = router;
